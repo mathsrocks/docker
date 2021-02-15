@@ -1,0 +1,92 @@
+# Purpose: build a docker image for AI, Machine Learning and Data science tasks with GPU (Nvidia CUDA) support
+# =========================================================================
+# References:
+# https://towardsdatascience.com/how-to-properly-use-the-gpu-within-a-docker-container-4c699c78c6d1
+# https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
+# https://developer.nvidia.com/cudnn
+# https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/11.2.0/ubuntu20.04-x86_64/runtime/Dockerfile
+# https://gitlab.com/nvidia/container-images/cuda/blob/master/dist/11.2.0/ubuntu20.04-x86_64/base/Dockerfile
+# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/tools/dockerfiles/dockerfiles/cpu-jupyter.Dockerfile 
+# https://github.com/faizanbashir/python-datascience/blob/master/Dockerfile  
+
+ARG UBUNTU_V=20.04
+ARG NVIDIA_CUDA_V=11.2.0
+ARG CUDNN_V=8
+ARG IMAGE_FLAVOUR=devel
+
+FROM nvidia/cuda:${NVIDIA_CUDA_V}-cudnn${CUDNN_V}-${IMAGE_FLAVOUR}-ubuntu${UBUNTU_V} as base
+
+# Adds metadata to the image as a key value pair example LABEL version="1.0"
+LABEL maintainer="Mathy Stoic <https://github.com/mathsrocks>"
+
+ARG USE_PYTHON_3_NOT_2=True
+ARG _PY_SUFFIX=${USE_PYTHON_3_NOT_2:+3}
+ARG PYTHON=python${_PY_SUFFIX}
+ARG PIP=pip${_PY_SUFFIX}
+
+# Set environment variables
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+ENV TZ=Australia/Sydney
+
+# Python data science and machine learning core packages
+#   * numpy: support for large, multi-dimensional arrays and matrices
+#   * matplotlib: plotting library for Python and its numerical mathematics extension NumPy.
+#   * scipy: library used for scientific computing and technical computing
+#   * scikit-learn: machine learning library integrates with NumPy and SciPy
+#   * pandas: library providing high-performance, easy-to-use data structures and data analysis tools
+#   * nltk: suite of libraries and programs for symbolic and statistical natural language processing for English
+ENV PY_CORE_PKGS="\
+    numpy \
+    matplotlib \
+    scikit-learn \
+    pandas \
+    seaborn \
+    Cython \
+    pathlib \
+"
+
+ENV PY_ADDON_PKGS="\
+    fastai \
+    jupyter \
+    jupyterlab \
+    jupyter_contrib_nbextensions \
+    jupyter_nbextensions_configurator \
+    keras \
+    nltk \
+    pip-tools \
+    scipy \ 
+    tensorflow-gpu \
+    torch torchvision \
+    xgboost \
+"
+
+# Pick up core dependencies
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \ 
+    apt-get update -y --fix-missing && \ 
+    apt-get install -y --no-install-recommends \
+    apt-utils \
+    build-essential \
+    byobu \
+    bzip2 \
+    curl \
+    htop \
+    libpq-dev \
+    nodejs \
+    npm \
+    pkg-config \
+    ${PYTHON} \
+    ${PYTHON}-dev \
+    ${PYTHON}-pip \
+    ${PYTHON}-setuptools \
+    swig \
+    unzip \
+    wget && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*    
+
+RUN ${PIP} --no-cache-dir install --upgrade \
+    pip \
+    setuptools
+
+# Install Python core and add-on packages
+RUN ${PIP} install -U --no-cache-dir ${PY_CORE_PKGS} ${PY_ADDON_PKGS}

@@ -1,0 +1,8 @@
+auto-sklearn
+beautifulsoup4
+d2l
+lifelines
+Lifetimes
+nbconvert==5.6.1
+PuLP
+pymc3

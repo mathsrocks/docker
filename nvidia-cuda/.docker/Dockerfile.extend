@@ -1,0 +1,27 @@
+# Purpose: build a docker image for AI, Machine Learning and Data science tasks with GPU (Nvidia CUDA) support
+# =========================================================================
+# References:
+# https://medium.com/@ntruong/jupyterlab-setup-for-my-data-team-84e5724d1bea
+# https://github.com/nqtrg/Docker-Compose
+
+ARG BASE_IMAGE=mathsrocks/nvidia-cuda
+ARG BASE_TAG=11.2.0-cudnn8-devel-ubuntu20.04
+
+FROM ${BASE_IMAGE}:${BASE_TAG}
+
+# Adds metadata to the image as a key value pair example LABEL version="1.0"
+LABEL maintainer="Mathy Stoic <https://github.com/mathsrocks>"
+
+ARG USE_PYTHON_3_NOT_2=True
+ARG _PY_SUFFIX=${USE_PYTHON_3_NOT_2:+3}
+ARG PYTHON=python${_PY_SUFFIX}
+ARG PIP=pip${_PY_SUFFIX}
+
+# Set environment variables
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
+# Install Python packages based on requirements.txt
+# Separated out in this extention image to void invalidating cache
+COPY ./requirements.txt /requirements.txt
+
+RUN ${PIP} install --no-cache-dir -Ur /requirements.txt
