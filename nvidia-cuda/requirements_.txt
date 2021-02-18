@@ -1,2 +1,4 @@
+giotto-tda
 pyod
 scikit-plot
+umap-learn
