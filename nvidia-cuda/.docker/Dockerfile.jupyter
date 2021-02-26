@@ -23,7 +23,9 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 RUN ${PIP} --no-cache-dir install --upgrade \
     jupytext \
     jupyterthemes \ 
-    jupyter_contrib_nbextensions && \
+    jupyter_contrib_nbextensions \
+    setuptools \ 
+    wheel && \
     jupyter contrib nbextension install --user
 
 # Install Python packages based on requirements.txt
@@ -31,6 +33,8 @@ RUN ${PIP} --no-cache-dir install --upgrade \
 COPY ./requirements_.txt /
 
 RUN ${PIP} install --no-cache-dir -Ur /requirements_.txt
+
+RUN ${PYTHON} -m spacy download en_core_web_sm
 
 # Enable Nbextensions
 # Install app dependencies

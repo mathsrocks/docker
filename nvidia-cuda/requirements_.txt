@@ -1,4 +1,6 @@
 giotto-tda
+pycaret
 pyod
 scikit-plot
+spacy[cuda110]
 umap-learn
